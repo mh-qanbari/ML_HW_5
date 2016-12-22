@@ -6,8 +6,8 @@ g_WORLD_SIZE = (20, 20)
 g_RANDOMNESS = 0.2
 g_LEARNING_RATE = 0.3
 g_DISCOUNT_FACTOR = 0.8
-g_MAX_ITERATION = 1000
-g_CONVERGE_ITERATION = 10000
+g_MAX_ITERATION = 1600
+g_CONVERGE_ITERATION = 1000
 
 g_ACT_UP = 0
 g_ACT_DOWN = 1
@@ -28,7 +28,7 @@ class World:
         # Private:
         self.__QValue = {}
         self.__reward = {}
-        value = random.random()
+        value = 1   #  random.random()
         for i in range(width):
             for j in range(length):
                 self.__QValue[(i, j, g_ACT_UP)] = value
@@ -96,7 +96,7 @@ class Agent:
     def go_down(self):
         i, j = self.current_state
         w, l = self.__world.size
-        i += 1
+        i -= 1
         if (i < 0) or (i >= w) or (j < 0) or (j >= l) or ((i, j) in self.__world.blocked_states):
             return None
         else:
@@ -126,7 +126,7 @@ class Agent:
     def go_up(self):
         i, j = self.current_state
         w, l = self.__world.size
-        i -= 1
+        i += 1
         if (i < 0) or (i >= w) or (j < 0) or (j >= l) or ((i, j) in self.__world.blocked_states):
             return None
         else:
@@ -179,7 +179,14 @@ class Agent:
                 new_value = old_value + Agent.learning_rate * (reward + Agent.discount_factor * best_value - old_value)
                 self.__world.set_value(prev_state, selected_action, new_value)
                 history.append(self.current_state)
-                iter += 1
+                # iter += 1
+            else:
+                old_value = self.__world.get_value(self.current_state, selected_action)
+                reward = self.__world.get_reward(self.current_state)
+                best_value = self.__world.get_best_action(self.current_state)[1]
+                new_value = old_value + Agent.learning_rate * (reward + Agent.discount_factor * best_value - old_value)
+                self.__world.set_value(self.current_state, selected_action, new_value)
+            iter += 1
 
             if (iter > Agent.converge_iteration) or (self.current_state == self.__world.goal_state):
                 break
@@ -202,11 +209,14 @@ if __name__ == "__main__":
     for i in range(g_MAX_ITERATION):
         agent.current_state = init_state
         his = agent.start()
+    print "finished"
+    Agent.randomness = 0.0
+    agent.current_state = init_state
+    his = agent.start()
 
     all_data = [(tpl[1], tpl[0]) for tpl in his[:]]
     print len(his)
     plt.axis([-1, 20, -1, 20])
     plt.plot(*zip(*itertools.chain.from_iterable(itertools.combinations(all_data, 1))), color='brown', marker='o')
     plt.show()
-    print "finished"
     world.print_values()
