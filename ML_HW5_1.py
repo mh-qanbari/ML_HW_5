@@ -209,7 +209,7 @@ if __name__ == "__main__":
     for i in range(g_MAX_ITERATION):
         agent.current_state = init_state
         his = agent.start()
-    print "finished"
+    print "Learning finished"
     Agent.randomness = 0.0
     agent.current_state = init_state
     his = agent.start()
