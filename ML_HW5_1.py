@@ -14,6 +14,8 @@ g_ACT_DOWN = 1
 g_ACT_RIGHT = 2
 g_ACT_LEFT = 3
 
+g_BIG_FLOAT = float(1000000000.0)
+
 true = True
 false = False
 
@@ -145,6 +147,7 @@ class Agent:
         return None
 
     def start(self):
+        converge_param = g_BIG_FLOAT
         history = [self.current_state]
         iter = 0
         while true:
@@ -180,18 +183,20 @@ class Agent:
                 self.__world.set_value(prev_state, selected_action, new_value)
                 history.append(self.current_state)
                 # iter += 1
+                converge_param += new_value - old_value
             else:
                 old_value = self.__world.get_value(self.current_state, selected_action)
                 reward = self.__world.get_reward(self.current_state)
                 best_value = self.__world.get_best_action(self.current_state)[1]
                 new_value = old_value + Agent.learning_rate * (reward + Agent.discount_factor * best_value - old_value)
                 self.__world.set_value(self.current_state, selected_action, new_value)
+                converge_param += new_value - old_value
             iter += 1
 
             if (iter > Agent.converge_iteration) or (self.current_state == self.__world.goal_state):
                 break
         # print history
-        return history
+        return history, converge_param / iter
 
 if __name__ == "__main__":
     # World initialization
@@ -210,19 +215,20 @@ if __name__ == "__main__":
     agent = Agent(world, init_state)
     # Learning block
     episodes_length = []
+    conv_params = []
     for i in range(g_MAX_ITERATION):
         agent.current_state = init_state
-        his = agent.start()
+        his, conv_param = agent.start()
         episodes_length.append(len(his))
-    N = g_MAX_ITERATION
+
+    # N = g_MAX_ITERATION
     menMeans = episodes_length[:]
     menStd = random.randint(0, 5)
-    width = 0.35  # the width of the bars
+    bar_width = 0.35  # the width of the bars
     # ind = [i + width for i in range(g_MAX_ITERATION)]  # the x locations for the groups
     ind = range(g_MAX_ITERATION)[:]  # the x locations for the groups
     fig, ax = plt.subplots()
-    rects = ax.bar(ind, menMeans, width, color='r', yerr=menStd)
-    # add some text for labels, title and axes ticks
+    # rects = ax.bar(ind, menMeans, bar_width, color='r', yerr=menStd)
     ax.set_ylabel('Episode Length')
     ax.set_title('Episode Number')
     ax.set_xticks(ind)
