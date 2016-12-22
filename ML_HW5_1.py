@@ -3,11 +3,11 @@ from matplotlib import pyplot as plt
 import itertools
 
 g_WORLD_SIZE = (20, 20)
-g_RANDOMNESS = 0.1
-g_LEARNING_RATE = 0.2
-g_DISCOUNT_FACTOR = 0.9
+g_RANDOMNESS = 0.2
+g_LEARNING_RATE = 0.3
+g_DISCOUNT_FACTOR = 0.8
 g_MAX_ITERATION = 1000
-g_CONVERGE_ITERATION = 1000
+g_CONVERGE_ITERATION = 10000
 
 g_ACT_UP = 0
 g_ACT_DOWN = 1
@@ -28,12 +28,13 @@ class World:
         # Private:
         self.__QValue = {}
         self.__reward = {}
+        value = random.random()
         for i in range(width):
             for j in range(length):
-                self.__QValue[(i, j, g_ACT_UP)] = random.random()
-                self.__QValue[(i, j, g_ACT_DOWN)] = random.random()
-                self.__QValue[(i, j, g_ACT_RIGHT)] = random.random()
-                self.__QValue[(i, j, g_ACT_LEFT)] = random.random()
+                self.__QValue[(i, j, g_ACT_UP)] = value
+                self.__QValue[(i, j, g_ACT_DOWN)] = value
+                self.__QValue[(i, j, g_ACT_RIGHT)] = value
+                self.__QValue[(i, j, g_ACT_LEFT)] = value
         for i in range(width):
             for j in range(length):
                 self.__reward[(i, j)] = -1
@@ -70,6 +71,12 @@ class World:
             best_value = left_value
             best_action = g_ACT_LEFT
         return best_action, best_value
+
+    def print_values(self):
+        print "values: ", self.__QValue
+
+    def print_rewards(self):
+        print "rewards: ", self.__QValue
 
 
 class Agent:
@@ -202,3 +209,4 @@ if __name__ == "__main__":
     plt.plot(*zip(*itertools.chain.from_iterable(itertools.combinations(all_data, 1))), color='brown', marker='o')
     plt.show()
     print "finished"
+    world.print_values()
