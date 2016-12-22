@@ -3,11 +3,11 @@ from matplotlib import pyplot as plt
 import itertools
 
 g_WORLD_SIZE = (20, 20)
-g_RANDOMNESS = 0.2
+g_RANDOMNESS = 0.15
 g_LEARNING_RATE = 0.3
 g_DISCOUNT_FACTOR = 0.8
-g_MAX_ITERATION = 1600
-g_CONVERGE_ITERATION = 1000
+g_MAX_ITERATION = 1700
+g_CONVERGE_ITERATION = 1000000
 
 g_ACT_UP = 0
 g_ACT_DOWN = 1
@@ -190,33 +190,50 @@ class Agent:
 
             if (iter > Agent.converge_iteration) or (self.current_state == self.__world.goal_state):
                 break
-        print history
+        # print history
         return history
 
 if __name__ == "__main__":
+    # World initialization
     goal = (0, 19)
     goal_value = 1000
     blocked_states = []
     for i in range(18):
         blocked_states.append((i, 9))
     world = World(g_WORLD_SIZE, blocked_states, goal, goal_value)
+    # Agent initialization
     Agent.learning_rate = g_LEARNING_RATE
     Agent.discount_factor = g_DISCOUNT_FACTOR
     Agent.converge_iteration = g_CONVERGE_ITERATION
     Agent.randomness = g_RANDOMNESS
     init_state = (0, 0)
     agent = Agent(world, init_state)
+    # Learning block
+    episodes_length = []
     for i in range(g_MAX_ITERATION):
         agent.current_state = init_state
         his = agent.start()
+        episodes_length.append(len(his))
+    N = g_MAX_ITERATION
+    menMeans = episodes_length[:]
+    menStd = random.randint(0, 5)
+    width = 0.35  # the width of the bars
+    # ind = [i + width for i in range(g_MAX_ITERATION)]  # the x locations for the groups
+    ind = range(g_MAX_ITERATION)[:]  # the x locations for the groups
+    fig, ax = plt.subplots()
+    rects = ax.bar(ind, menMeans, width, color='r', yerr=menStd)
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel('Episode Length')
+    ax.set_title('Episode Number')
+    ax.set_xticks(ind)
+    plt.show()
     print "Learning finished"
+    # Learned path to goal
     Agent.randomness = 0.0
     agent.current_state = init_state
     his = agent.start()
-
+    # Show learned path to goal
     all_data = [(tpl[1], tpl[0]) for tpl in his[:]]
-    print len(his)
     plt.axis([-1, 20, -1, 20])
     plt.plot(*zip(*itertools.chain.from_iterable(itertools.combinations(all_data, 1))), color='brown', marker='o')
     plt.show()
-    world.print_values()
