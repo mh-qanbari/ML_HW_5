@@ -235,19 +235,14 @@ if __name__ == "__main__":
                 g_CONVERGE_PARAM -= 1
                 if g_CONVERGE_PARAM == 0:
                     break
-            # print "|%f - %f|\t=\t%f" % (avg_length, len(his), fabs(avg_length - len(his)))
-            # if fabs(avg_conv - conv_param)
         else:
             conv_params.append(g_BIG_FLOAT)
 
     menMeans = episodes_length[:]
     # menMeans = conv_params[:]
-    # menStd = random.randint(0, 5)
     bar_width = 0.35  # the width of the bars
-    # ind = [i + width for i in range(g_MAX_ITERATION)]  # the x locations for the groups
     ind = range(len(episodes_length))[:]  # the x locations for the groups
     fig, ax = plt.subplots()
-    # rects = ax.bar(ind, menMeans, bar_width, color='r', yerr=menStd)
     rects = ax.bar(ind, menMeans, bar_width, color='r')
     ax.set_ylabel('Episode Length')
     ax.set_title('Episode Number')
