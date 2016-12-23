@@ -1,4 +1,5 @@
 import random
+from math import fabs
 from matplotlib import pyplot as plt
 import itertools
 
@@ -6,8 +7,9 @@ g_WORLD_SIZE = (20, 20)
 g_RANDOMNESS = 0.15
 g_LEARNING_RATE = 0.3
 g_DISCOUNT_FACTOR = 0.8
-g_MAX_ITERATION = 1700
+g_MAX_ITERATION = 20000
 g_CONVERGE_ITERATION = 1000000
+g_CONVERGE_PARAM = 20
 
 g_ACT_UP = 0
 g_ACT_DOWN = 1
@@ -30,7 +32,7 @@ class World:
         # Private:
         self.__QValue = {}
         self.__reward = {}
-        value = 1   #  random.random()
+        value = 0  # random.random()
         for i in range(width):
             for j in range(length):
                 self.__QValue[(i, j, g_ACT_UP)] = value
@@ -220,15 +222,33 @@ if __name__ == "__main__":
         agent.current_state = init_state
         his, conv_param = agent.start()
         episodes_length.append(len(his))
+        # conv_params.append(conv_param)
+        if i > 200:
+            # print "|%f - %f|\t=\t%f" % (conv_params[i-1], conv_param, fabs(conv_params[i-1] - conv_param))
+            # avg_conv = sum(conv_params[i-200-1: i-1]) / 200.0
+            # conv_params.append(fabs(avg_conv - conv_param))
+            avg_length = sum(episodes_length[i - 200 - 1: i - 1]) / 200.0
+            conv_params.append(fabs(avg_length - len(his)))
+            conv_param = fabs(sum(episodes_length[i - 200 - 1 - 5: i - 1 - 5]) - sum(episodes_length[i - 200 - 1: i - 1])) / 200.0
+            print conv_param
+            if conv_param < 0.01:
+                g_CONVERGE_PARAM -= 1
+                if g_CONVERGE_PARAM == 0:
+                    break
+            # print "|%f - %f|\t=\t%f" % (avg_length, len(his), fabs(avg_length - len(his)))
+            # if fabs(avg_conv - conv_param)
+        else:
+            conv_params.append(g_BIG_FLOAT)
 
-    # N = g_MAX_ITERATION
     menMeans = episodes_length[:]
-    menStd = random.randint(0, 5)
+    # menMeans = conv_params[:]
+    # menStd = random.randint(0, 5)
     bar_width = 0.35  # the width of the bars
     # ind = [i + width for i in range(g_MAX_ITERATION)]  # the x locations for the groups
-    ind = range(g_MAX_ITERATION)[:]  # the x locations for the groups
+    ind = range(len(episodes_length))[:]  # the x locations for the groups
     fig, ax = plt.subplots()
     # rects = ax.bar(ind, menMeans, bar_width, color='r', yerr=menStd)
+    rects = ax.bar(ind, menMeans, bar_width, color='r')
     ax.set_ylabel('Episode Length')
     ax.set_title('Episode Number')
     ax.set_xticks(ind)
@@ -237,7 +257,7 @@ if __name__ == "__main__":
     # Learned path to goal
     Agent.randomness = 0.0
     agent.current_state = init_state
-    his = agent.start()
+    his, conv_param = agent.start()
     # Show learned path to goal
     all_data = [(tpl[1], tpl[0]) for tpl in his[:]]
     plt.axis([-1, 20, -1, 20])
