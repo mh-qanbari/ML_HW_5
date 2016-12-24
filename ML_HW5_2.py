@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 import numpy as np
 
 g_FILE_DATA = "HW5-2_data_heart.csv"
@@ -22,8 +24,8 @@ class PatientInfo:
 
 
 class PatientsInfo:
-    sex = {'male', 'female'}
-    cp = set()
+    k = 1
+
     def __init__(self, instance_count, feature_count):
         # age,sex,cp,trestbps,col,chol,fbs,restecg,thalach,exang,oldpeak,slope,ca,thal,num
         self.info_list = np.zeros((instance_count, feature_count))
@@ -166,6 +168,35 @@ class PatientsInfo:
         x = FeaturesManager.normalize(x)
         self.info_list[:, num_index] = np.array(x).reshape(n)
 
+    @staticmethod
+    def distance(instance1, instance2):
+        if instance1.shape != instance2.shape:
+            raise ValueError("Two array must be same dimension")
+        diff = np.power(instance1 - instance2, 2)
+        diff_sum = np.sum(diff, axis=1)
+        return np.sqrt(diff_sum)
+
+    def get_label(self, test_instance, train_range):
+        train_labels = np.array([info[-1] for info in self.info_list[train_range[0]: train_range[1]]])
+        train_instances = np.array([info[:-1] for info in self.info_list[train_range[0]: train_range[1]]])
+        train_instances = train_instances.reshape((train_range[1] - train_range[0], 14))
+        num = train_instances.shape[0]
+        helpers = np.tile(test_instance, (num, 1))
+        # helpers = test_instance
+        # helpers = np.tile(test_instance, (1, num))
+        distance = PatientsInfo.distance(helpers, train_instances)
+        sorted_indices = distance.argsort()
+        label_set = {}
+        for i in range(PatientsInfo.k):
+            index = sorted_indices[i]
+            label = train_labels[index]
+            if label not in label_set.keys():
+                label_set[label] = 1
+            else:
+                label_set[label] += 1
+        labels = sorted(label_set.items(), key=itemgetter(1), reverse=True)
+        return labels[0][0]
+
 
 class FeaturesManager:
     def __init__(self):
@@ -268,6 +299,7 @@ class FeaturesManager:
 
 if __name__ == "__main__":
     ds = PatientsInfo(303, 15)
+    ds.k = 3
 
     with open(g_FILE_DATA) as file_data:
         ignore_line = true
@@ -303,5 +335,6 @@ if __name__ == "__main__":
 
         print ds.info_list[:][:]
         ds.normalize()
+        print ds.get_label(ds.info_list[-1, :-1], (0, -1))
         print "==================="
         print ds.info_list[:][:]
