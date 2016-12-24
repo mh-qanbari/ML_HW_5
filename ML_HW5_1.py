@@ -206,7 +206,7 @@ class Agent:
             if (iter > Agent.converge_iteration) or (self.current_state == self.__world.goal_state):
                 break
         # print history
-        return history, converge_param / iter
+        return history, converge_param / iter, iter
 
 
 def parallel_agent(discount_factor, world, converge_param=64):
@@ -218,11 +218,11 @@ def parallel_agent(discount_factor, world, converge_param=64):
     conv_params = []
     for i in range(g_MAX_ITERATION):
         agent.current_state = init_state
-        his, conv_param = agent.start(discount_factor)
-        episodes_length.append(len(his))
+        his, conv_param, iter = agent.start(discount_factor)
+        episodes_length.append(iter)
         if i > 200:
             avg_length = sum(episodes_length[i - 200 - 1: i - 1]) / 200.0
-            conv_params.append(fabs(avg_length - len(his)))
+            conv_params.append(fabs(avg_length - iter))
             conv_param = fabs(
                 sum(episodes_length[i - 200 - 1 - 5: i - 1 - 5]) - sum(episodes_length[i - 200 - 1: i - 1]) ) / 200.0
             print conv_param
