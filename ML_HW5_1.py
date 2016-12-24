@@ -48,8 +48,8 @@ class World:
             for j in range(length):
                 self.__reward[(i, j)] = -1
         self.__reward[(goal_state[0], goal_state[1])] = goal_value
-        print "Q(s,a):", self.__QValue
-        print "R(s)  :", self.__reward
+        # print "Q(s,a):", self.__QValue
+        # print "R(s)  :", self.__reward
 
     def set_value(self, state, action, value):
         self.__QValue[(state[0], state[1], action)] = value
@@ -209,7 +209,8 @@ class Agent:
         return history, converge_param / iter
 
 
-def parallel_agent(discount_factor, world, converge_param=64, precision_step=100):
+def parallel_agent(discount_factor, world, converge_param=64):
+    print world.print_values()
     init_state = (0, 0)
     agent = Agent(world, init_state)
     # Learn agent
